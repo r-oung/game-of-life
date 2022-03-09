@@ -9,7 +9,8 @@ root          Root directory
 ```
 
 ## tl;dr
-Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/), then;
+Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/), then:
+
 ```shell
 cd wasm/
 wasm-pack build
