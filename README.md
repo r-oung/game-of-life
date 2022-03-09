@@ -9,8 +9,9 @@ root          Root directory
 ```
 
 ## tl;dr
+Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/), then;
 ```shell
-cd gol-wasm/
+cd wasm/
 wasm-pack build
 cd ../www/
 npm i
