@@ -1,0 +1,19 @@
+{
+  "name": "gol-webapp",
+  "version": "0.1.0",
+  "description": "Conway's Game of Life in WASM",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "serve": "webpack-dev-server"
+  },
+  "author": "Raymond Oung <ray@yamoung.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "wasm-game-of-life": "file:../wasm/pkg",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4",
+    "copy-webpack-plugin": "^10.2.4"
+  }
+}
