@@ -157,11 +157,9 @@ document.getElementById("type-1").addEventListener("click", () => initUniverse(I
 const playPauseButton = document.getElementById("play-pause");
 playPauseButton.addEventListener("click", () => {
   if (!animationId) {
-    console.log('play')
     playPauseButton.textContent = "⏸";
     renderLoop();
   } else {
-    console.log('pause')
     playPauseButton.textContent = "⏯︎";
     cancelAnimationFrame(animationId);
     animationId = null;

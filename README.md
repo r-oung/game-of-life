@@ -3,6 +3,8 @@ Conway's game of life implemented in [Rust](https://www.rust-lang.org/) and comp
 
 Used to test WebAssembly performance and experiment with Rust.
 
+[Live page](https://r-oung.github.io/game-of-life/)
+
 
 ## Folders
 ```
