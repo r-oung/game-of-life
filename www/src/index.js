@@ -2,130 +2,123 @@
 import { Universe } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg.wasm"; // WebAssembly's linear memory
 
-const CELL_SIZE = 5; // px
-const GRID_COLOR = "#CCCCCC";
+const CELL_SIZE = 5; // [px]
+const GRID_COLOR = "#EEEEEE";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
-// Construct the universe, and get its width and height
+// Construct the universe, and get its width and height.
 const universe = Universe.new();
-const width = universe.width();
-const height = universe.height();
+const WIDTH = universe.width();
+const HEIGHT = universe.height();
+const SIZE = WIDTH * HEIGHT;
 
-// Give the canvas room for all of our cells and a 1px border around each of them
-const canvas = document.getElementById('game-of-life-canvas');
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
+// Give the canvas room for all of our cells and a 1px border
+// around each of them.
+const canvas = document.getElementById("game-of-life-canvas");
+canvas.width = (CELL_SIZE + 1) * WIDTH + 1;
+canvas.height = (CELL_SIZE + 1) * HEIGHT + 1;
 
 const ctx = canvas.getContext('2d');
 
 let animationId = null;
 
-const getIndex = (row, column) => {
-  return row * width + column;
+/**
+ * Get buffer index
+ * @param {number} row 
+ * @param {number} col 
+ * @returns 
+ */
+ const getIndex = (row, col) => {
+  return row * WIDTH + col;
 };
 
-const bitIsSet = (n, arr) => {
-  const byte = Math.floor(n / 8);
-  const mask = 1 << (n % 8);
-  return (arr[byte] & mask) === mask;
-}
-
-const drawGrid = () => {
-  ctx.beginPath()
-  ctx.strokeStyle = GRID_COLOR;
-
-  // Vertical lines
-  for (let i = 0; i <= width; i++) {
+/**
+ * Draw grid
+ */
+ const drawGrid = () => {
+  
+  ctx.beginPath();
+  
+  // Draw vertical lines
+  for (let i = 0; i <= WIDTH; i++) {
     ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-    ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+    ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * HEIGHT + 1);
   }
-
-  // Horizontal lines
-  for (let i = 0; i <= width; i++) {
+  
+  // Draw horizontal lines
+  for (let i = 0; i <= HEIGHT; i++) {
     ctx.moveTo(0, i * (CELL_SIZE + 1) + 1);
-    ctx.lineTo((CELL_SIZE + 1) * width + 1, i * (CELL_SIZE + 1) + 1);
+    ctx.lineTo((CELL_SIZE + 1) * WIDTH + 1, i * (CELL_SIZE + 1) + 1);
   }
-
+  
+  // Assign color
+  ctx.strokeStyle = GRID_COLOR;
   ctx.stroke();
 }
 
-const drawCells = () => {
-  const cellsPtr = universe.cells();
-  const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
+/**
+ * Draw cells
+ */
+ const drawCells = () => {
+  const cellsPtr = universe.cells(); // get pointer to WebAssembly's linear memory
+  const cells = new Uint8Array(memory.buffer, cellsPtr, SIZE);
 
   ctx.beginPath();
 
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
-
-      ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
-
-      ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
-      );
-    }
-  }
-
-  // Alive cells.
+  // Alive cells
   ctx.fillStyle = ALIVE_COLOR;
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
+  for (let row = 0; row < HEIGHT; row++) {
+    for (let col = 0; col < WIDTH; col++) {
       const idx = getIndex(row, col);
-      if (bitIsSet(idx, cells) !== ALIVE_COLOR) {
-        continue;
+      if (cells[idx]) {
+        ctx.fillRect(
+          col * (CELL_SIZE + 1) + 1,
+          row * (CELL_SIZE + 1) + 1,
+          CELL_SIZE,
+          CELL_SIZE
+        );
       }
-
-      ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
-      );
     }
   }
 
-  // Dead cells.
+  // Dead cells
   ctx.fillStyle = DEAD_COLOR;
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
+  for (let row = 0; row < HEIGHT; row++) {
+    for (let col = 0; col < WIDTH; col++) {
       const idx = getIndex(row, col);
-      if (bitIsSet(idx, cells) !== DEAD_COLOR) {
-        continue;
+      if (!cells[idx]) {
+        ctx.fillRect(
+          col * (CELL_SIZE + 1) + 1,
+          row * (CELL_SIZE + 1) + 1,
+          CELL_SIZE,
+          CELL_SIZE
+        );
       }
-
-      ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
-      );
     }
   }
-
 
   ctx.stroke();
 }
 
-
-// Interaction
+// Interaction button
 const playPauseButton = document.getElementById("play-pause");
+
 const isPaused = () => {
   return animationId === null;
 }
+
 const play = () => {
   playPauseButton.textContent = "⏸";
   renderLoop();
 }
+
 const pause = () => {
-  playPauseButton.textContent = "▶";
+  playPauseButton.textContent = "⏯︎";
   cancelAnimationFrame(animationId);
   animationId = null;
 }
+
 playPauseButton.addEventListener("click", () => {
   if (isPaused()) {
     play();
@@ -134,8 +127,9 @@ playPauseButton.addEventListener("click", () => {
   }
 });
 
-
-// Performance
+/**
+ * Class to measure FPS performance
+ */
 const fps = new class {
   constructor() {
     this.fps = document.getElementById("fps");
@@ -144,44 +138,38 @@ const fps = new class {
   }
 
   render() {
-    // Convert the delta time since the last frame render into a measure
-    // of frames per second.
+    // Compute frames per second
     const now = performance.now();
     const delta = now - this.lastFrameTimeStamp;
-    this.lastFrameTimeStamp = now;
-    const fps = 1 / delta * 1000;
+    this.lastFrameTimeStamp = now; // update timestamp
+    const fps = 1 / delta * 1000; // [Hz]
 
-    // Save only the latest 100 timings.
+    // Save the 100 most recent FPS values
     this.frames.push(fps);
-    if (this.frames.length > 100) {
+    if (this.frames.length >= 100) { // handle overflow
       this.frames.shift();
     }
 
-    // Find the max, min, and mean of our 100 latest timings.
-    let min = Infinity;
-    let max = -Infinity;
-    let sum = 0;
-    for (let i = 0; i < this.frames.length; i++) {
-      sum += this.frames[i];
-      min = Math.min(this.frames[i], min);
-      max = Math.max(this.frames[i], max);
-    }
+    // Find the max, min, and mean of the last 100 FPS values
+    let max = Math.max(...this.frames);
+    let min = Math.min(...this.frames);
+    let sum = this.frames.reduce((total, currentValue) => {return total + currentValue});
     let mean = sum / this.frames.length;
 
     // Render the statistics.
-    this.fps.textContent = `FPS: ${Math.round(fps)} (Avg: ${Math.round(mean)}, Min: ${Math.round(min)}, Max: ${Math.round(max)})`
-      .trim();
+    this.fps.textContent = `FPS: ${Math.round(fps)} (Avg: ${Math.round(mean)}, Min: ${Math.round(min)}, Max: ${Math.round(max)})`.trim();
   }
 };
 
-
-// Render Loop
-const renderLoop = () => {
+/**
+ * Render loop
+ */
+ const renderLoop = () => {
   fps.render();
 
-  console.time();
+  // console.time();
   universe.tick();
-  console.timeEnd();
+  // console.timeEnd();
 
   drawGrid();
   drawCells();
@@ -189,7 +177,7 @@ const renderLoop = () => {
   animationId = requestAnimationFrame(renderLoop);
 };
 
-
+// Initialize
 drawGrid();
 drawCells();
 play();
