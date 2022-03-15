@@ -1,12 +1,16 @@
 # Conway's Game of Life
+Conway's game of life implemented in [Rust](https://www.rust-lang.org/) and compiled to [WebAssembly](https://webassembly.org/).
+
+Used to test WebAssembly performance and experiment with Rust.
 
 
 ## Folders
 ```
 root          Root directory
-├─ gol-wasm   Game of Life WASM and JavaScript API
+├─ wasm       Game of Life WASM and JavaScript API
 └─ www        Web application
 ```
+
 
 ## tl;dr
 Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/), then:
@@ -22,3 +26,4 @@ npm run serve
 
 ## References
 - [Rust and WebAssembly: Tutorial](https://rustwasm.github.io/docs/book/game-of-life/introduction.html)
+- [Rust By Example](https://doc.rust-lang.org/rust-by-example/primitives/array.html)

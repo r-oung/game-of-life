@@ -1,4 +1,5 @@
-mod utils;
+// mod utils;
+extern crate js_sys;
 
 // Import `wasm_bindgen`
 // https://rustwasm.github.io/wasm-bindgen/
@@ -15,6 +16,15 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 const WIDTH: u16 = 128;
 const HEIGHT: u16 = 128;
 const SIZE: usize = (WIDTH as usize) * (HEIGHT as usize);
+
+#[wasm_bindgen]
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum INIT {
+  Empty = 0,
+  Random = 1,
+  Type1 = 2,
+}
 
 #[wasm_bindgen]
 pub struct Universe {
@@ -127,12 +137,32 @@ impl Universe {
   }
 
   /// Set cell value
-  pub fn set_cell(&mut self, row: u16, col: u16, val: bool) {
+  pub fn toggle_cell(&mut self, row: u16, col: u16) {
     let idx = self.get_index(row, col);
     if self.switch {
-      self.cells1[idx] = val;
+      self.cells1[idx] = !self.cells1[idx];
     } else {
-      self.cells2[idx] = val;
+      self.cells2[idx] = !self.cells2[idx];
+    }
+  }
+
+  // Initialize universe
+  pub fn init(&mut self, init: INIT) {
+    for i in 0..SIZE {
+      match init {
+        INIT::Empty => {
+          self.cells1[i] = false;
+        }
+        // Initialize cells randomly
+        INIT::Random => {
+          self.cells1[i] = js_sys::Math::random() < 0.5;
+        },
+        // Initialization from Rust-WASM tutorial
+        INIT::Type1 => {
+          self.cells1[i] = i % 2 == 0 || i % 7 == 0;
+        },
+      }
+      self.cells2[i] = self.cells1[i];
     }
   }
   
@@ -157,17 +187,13 @@ impl Universe {
 
   /// Constructor
   pub fn new() -> Universe {
-    utils::set_panic_hook();
+    // utils::set_panic_hook();
 
     let width = WIDTH;
     let height = HEIGHT;
     let switch = true;
-    let mut cells1 = [false; SIZE];
-    let mut cells2 = [false; SIZE];
-    for i in 0..SIZE {
-      cells1[i] = i % 2 == 0 || i % 7 == 0;
-      cells2[i] = cells1[i];
-    }
+    let cells1 = [false; SIZE];
+    let cells2 = [false; SIZE];
 
     Universe { width, height, cells1, cells2, switch }
   }

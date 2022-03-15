@@ -1,9 +1,9 @@
 [package]
 name = "wasm-game-of-life"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Raymond Oung <ray@yamoung.com>"]
 edition = "2018"
-description = "Game of life API in Web Assembly"
+description = "Conway's game of life implemented in Rust and compiled to WebAssembly"
 license = "MIT"
 repository = "git"
 
@@ -11,17 +11,17 @@ repository = "git"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["console_error_panic_hook"]
+# default = ["console_error_panic_hook"]
 
 [dependencies]
-wasm-bindgen = "0.2.63"
-fixedbitset = "0.4.1"
+wasm-bindgen = "0.2.79"
+js-sys = "0.3.56"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
-console_error_panic_hook = { version = "0.1.6", optional = true }
+# console_error_panic_hook = { version = "0.1.6", optional = true }
 
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. It is slower than the default
@@ -30,15 +30,14 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 # Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
 wee_alloc = { version = "0.4.5", optional = true }
 
-[dependencies.web-sys]
-version = "0.3"
-features = [
-  "console",
-]
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.13"
+wasm-bindgen-test = "0.3.29"
 
 [profile.release]
+# Compile with link time optimizations (LTO)
+# https://rustwasm.github.io/docs/book/reference/code-size.html#compiling-with-link-time-optimizations-lto
+lto = true
+
 # Tell `rustc` to optimize for small code size.
-opt-level = "s"
+# opt-level = "s"

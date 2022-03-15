@@ -1,5 +1,5 @@
 // Game of Life Engine
-import { Universe } from "wasm-game-of-life";
+import { Universe, INIT } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg.wasm"; // WebAssembly's linear memory
 
 const CELL_SIZE = 5; // [px]
@@ -18,7 +18,6 @@ const SIZE = WIDTH * HEIGHT;
 const canvas = document.getElementById("game-of-life-canvas");
 canvas.width = (CELL_SIZE + 1) * WIDTH + 1;
 canvas.height = (CELL_SIZE + 1) * HEIGHT + 1;
-
 const ctx = canvas.getContext('2d');
 
 let animationId = null;
@@ -101,29 +100,71 @@ let animationId = null;
   ctx.stroke();
 }
 
-// Interaction button
+/**
+ * Toggle selected cell
+ */
+ const onToggleCell = (e) => {
+  const boundingRect = canvas.getBoundingClientRect();
+
+  const scaleX = canvas.width / boundingRect.width;
+  const scaleY = canvas.height / boundingRect.height;
+
+  const canvasLeft = (e.clientX - boundingRect.left) * scaleX;
+  const canvasTop = (e.clientY - boundingRect.top) * scaleY;
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), HEIGHT - 1);
+  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), WIDTH - 1);
+
+  universe.toggle_cell(row, col);
+
+  drawGrid();
+  drawCells();
+}
+
+/**
+ * Initialize universe
+ * @param {INIT} init 
+ */
+const initUniverse = (init) => {
+  switch (init) {
+    case INIT.Empty:
+      universe.init(INIT.Empty);
+      break;
+    case INIT.Random:
+      universe.init(INIT.Random);
+      break;
+    case INIT.Type1:
+      universe.init(INIT.Type1);
+      break;
+    default:
+      break;
+  }
+
+  drawGrid();
+  drawCells();
+}
+
+/**
+ * Initialization buttons
+ */
+document.getElementById("clear").addEventListener("click", () => initUniverse(INIT.Empty))
+document.getElementById("random").addEventListener("click", () => initUniverse(INIT.Random))
+document.getElementById("type-1").addEventListener("click", () => initUniverse(INIT.Type1))
+
+/**
+ * Interaction button
+ */
 const playPauseButton = document.getElementById("play-pause");
-
-const isPaused = () => {
-  return animationId === null;
-}
-
-const play = () => {
-  playPauseButton.textContent = "⏸";
-  renderLoop();
-}
-
-const pause = () => {
-  playPauseButton.textContent = "⏯︎";
-  cancelAnimationFrame(animationId);
-  animationId = null;
-}
-
 playPauseButton.addEventListener("click", () => {
-  if (isPaused()) {
-    play();
+  if (!animationId) {
+    console.log('play')
+    playPauseButton.textContent = "⏸";
+    renderLoop();
   } else {
-    pause();
+    console.log('pause')
+    playPauseButton.textContent = "⏯︎";
+    cancelAnimationFrame(animationId);
+    animationId = null;
   }
 });
 
@@ -177,7 +218,6 @@ const fps = new class {
   animationId = requestAnimationFrame(renderLoop);
 };
 
-// Initialize
-drawGrid();
-drawCells();
-play();
+// Initialize universe
+canvas.addEventListener('click', onToggleCell);
+initUniverse(INIT.Random);
